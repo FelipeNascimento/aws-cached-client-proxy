@@ -1,0 +1,28 @@
+{
+  "name": "aws-cached-client-proxy",
+  "version": "0.0.2",
+  "description": "AWS cached client for avoid Rate Exceeded from AWS",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "npm version patch && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FelipeNascimento/aws-cached-client-proxy.git"
+  },
+  "keywords": [
+    "aws",
+    "cached",
+    "sdk"
+  ],
+  "author": "FelipeNascimento",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FelipeNascimento/aws-cached-client-proxy/issues"
+  },
+  "homepage": "https://github.com/FelipeNascimento/aws-cached-client-proxy#readme",
+  "dependencies": {
+    "aws-sdk": "^2.426.0",
+    "ioredis": "^4.6.2"
+  }
+}
