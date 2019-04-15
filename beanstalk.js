@@ -51,23 +51,23 @@ exports.describeEnvironments = async (region, accessKeyId, secretAccessKey, sess
   let cached = await redis.get(key);
   if (cached) return JSON.parse(cached)
   let environments = await _describeEnvironments(region, accessKeyId, secretAccessKey, sessionToken)
-  await redis.set(key, JSON.stringify(environments), 90);
+  await redis.set(key, JSON.stringify(environments), ttl || 90);
   return environments
 }
-exports.describeEnvironmentResources = async (name, region, accessKeyId, secretAccessKey, sessionToken) => {
+exports.describeEnvironmentResources = async (name, region, accessKeyId, secretAccessKey, sessionToken, ttl) => {
   let key = String.toMD5(`beanstalk_describeenvironment_resources_${name}_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
   let cached = await redis.get(key);
   if (cached) return JSON.parse(cached)
   let resources = await _describeEnvironmentResources(name, region, accessKeyId, secretAccessKey, sessionToken)
-  await redis.set(key, JSON.stringify(resources), 120);
+  await redis.set(key, JSON.stringify(resources), ttl || 120);
   return resources
 };
-exports.describeConfigurationSettings = async (application, name, region, accessKeyId, secretAccessKey, sessionToken) => {
+exports.describeConfigurationSettings = async (application, name, region, accessKeyId, secretAccessKey, sessionToken,ttl) => {
   let key = String.toMD5(`beanstalk_describeconfiguration_settings_${application}_${name}_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
   let cached = await redis.get(key);
   if (cached) return JSON.parse(cached)
   let configs = await _describeConfigurationSettings(application, name, region, accessKeyId, secretAccessKey, sessionToken)
-  await redis.set(key, JSON.stringify(configs), 120);
+  await redis.set(key, JSON.stringify(configs), ttl || 120);
   return configs
 };
 exports.getEnvironmentsFromApplication = function (application, region, accessKeyId, secretAccessKey, sessionToken) {
