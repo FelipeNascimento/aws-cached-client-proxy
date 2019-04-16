@@ -13,8 +13,7 @@ function _describeInstanceHealth(name, region, accessKeyId, secretAccessKey, ses
   return new Promise((fulfill, reject) => {
     const client = getClient(region, accessKeyId, secretAccessKey, sessionToken)
     var params = {
-      LoadBalancerName: name,
-      IncludeDeleted: false
+      LoadBalancerName: name
     };
     client.describeInstanceHealth(params, function (err, data) {
       if (err) reject(err, err.stack);
