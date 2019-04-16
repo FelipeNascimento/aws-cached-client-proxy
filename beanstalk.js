@@ -18,12 +18,9 @@ function _describeEnvironments(params, region, accessKeyId, secretAccessKey, ses
     });
   });
 };
-function _describeEnvironmentResources(name, region, accessKeyId, secretAccessKey, sessionToken) {
+function _describeEnvironmentResources(params, region, accessKeyId, secretAccessKey, sessionToken) {
   return new Promise((fulfill, reject) => {
     const client = getClient(region, accessKeyId, secretAccessKey, sessionToken)
-    var params = {
-      EnvironmentName: name
-    };
     client.describeEnvironmentResources(params, function (err, data) {
       if (err) reject(err, err.stack);
       else fulfill(data.EnvironmentResources);
@@ -51,11 +48,11 @@ exports.describeEnvironments = async (params, region, accessKeyId, secretAccessK
   await redis.set(key, JSON.stringify(environments), ttl || 90);
   return environments
 }
-exports.describeEnvironmentResources = async (name, region, accessKeyId, secretAccessKey, sessionToken, ttl) => {
-  let key = String.toMD5(`beanstalk_describeenvironment_resources_${name}_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
+exports.describeEnvironmentResources = async (params, region, accessKeyId, secretAccessKey, sessionToken, ttl) => {
+  let key = String.toMD5(`beanstalk_describe_environment_resources_${JSON.stringify(params)}_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
   let cached = await redis.get(key);
   if (cached) return JSON.parse(cached)
-  let resources = await _describeEnvironmentResources(name, region, accessKeyId, secretAccessKey, sessionToken)
+  let resources = await _describeEnvironmentResources(params, region, accessKeyId, secretAccessKey, sessionToken)
   await redis.set(key, JSON.stringify(resources), ttl || 120);
   return resources
 };
