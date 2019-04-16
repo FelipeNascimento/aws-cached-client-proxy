@@ -9,12 +9,9 @@ function getClient(region, accessKeyId, secretAccessKey, sessionToken) {
   if (sessionToken) options.sessionToken = sessionToken
   return new AWS.ElasticBeanstalk(options);
 }
-function _describeEnvironments(region, accessKeyId, secretAccessKey, sessionToken) {
+function _describeEnvironments(params, region, accessKeyId, secretAccessKey, sessionToken) {
   return new Promise((fulfill, reject) => {
     const client = getClient(region, accessKeyId, secretAccessKey, sessionToken)
-    var params = {
-      IncludeDeleted: false
-    };
     client.describeEnvironments(params, function (err, data) {
       if (err) reject(err, err.stack);
       else fulfill(data.Environments);
@@ -46,11 +43,11 @@ function _describeConfigurationSettings(application, name, region, accessKeyId, 
     });
   });
 };
-exports.describeEnvironments = async (region, accessKeyId, secretAccessKey, sessionToken, ttl) => {
-  let key = String.toMD5(`beanstalk_describe_environments_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
+exports.describeEnvironments = async (params, region, accessKeyId, secretAccessKey, sessionToken, ttl) => {
+  let key = String.toMD5(`beanstalk_describe_environments_${JSON.stringify(params)}_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
   let cached = await redis.get(key);
   if (cached) return JSON.parse(cached)
-  let environments = await _describeEnvironments(region, accessKeyId, secretAccessKey, sessionToken)
+  let environments = await _describeEnvironments(params, region, accessKeyId, secretAccessKey, sessionToken)
   await redis.set(key, JSON.stringify(environments), ttl || 90);
   return environments
 }
@@ -96,37 +93,31 @@ exports.describeApplicationVersions = function (application, labels, region, acc
     });
   });
 }
-exports.getEnvironmentByName = function (name, region, accessKeyId, secretAccessKey, sessionToken) {
-  return new Promise((fulfill, reject) => {
-    const client = getClient(region, accessKeyId, secretAccessKey, sessionToken)
-    var params = {
-      EnvironmentNames: [name],
-      IncludeDeleted: true
-    };
-    client.describeEnvironments(params, function (err, data) {
-      if (err) reject(err, err.stack);
-      else {
-        let environment = null
-        if (data.Environments) environment = data.Environments.find(x => x.EnvironmentName === name)
-        fulfill(environment);
-      }
-    });
-  });
-};
-exports.getEnvironmentById = function (id, region, accessKeyId, secretAccessKey, sessionToken) {
-  return new Promise((fulfill, reject) => {
-    const client = getClient(region, accessKeyId, secretAccessKey, sessionToken)
-    var params = {
-      EnvironmentIds: [id],
-      IncludeDeleted: true
-    };
-    client.describeEnvironments(params, function (err, data) {
-      if (err) reject(err, err.stack);
-      let environment = null
-      if (data.Environments) environment = data.Environments.find(x => x.EnvironmentId === id)
-      fulfill(environment);
-    });
-  });
+exports.getEnvironmentByName = async (name, region, accessKeyId, secretAccessKey, sessionToken, ttl) => {
+  let key = String.toMD5(`beanstalk_get_environment_by_name_${name}_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
+  let cached = await redis.get(key);
+  if (cached) return JSON.parse(cached)
+  var params = {
+    EnvironmentNames: [name],
+    IncludeDeleted: true
+  };
+  let environments = await this.describeEnvironments(params, region, accessKeyId, secretAccessKey, sessionToken, ttl)
+  let environment = environments.find(x => x.EnvironmentName === name)
+  if(environment) await redis.set(key, JSON.stringify(environment), ttl || 90);
+  return environment
+}
+exports.getEnvironmentById = async (id, region, accessKeyId, secretAccessKey, sessionToken, ttl) => {
+  let key = String.toMD5(`beanstalk_get_environment_by_id_${id}_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
+  let cached = await redis.get(key);
+  if (cached) return JSON.parse(cached)
+  var params = {
+    EnvironmentIds: [id],
+    IncludeDeleted: true
+  };
+  let environments = await this.describeEnvironments(params, region, accessKeyId, secretAccessKey, sessionToken, ttl)
+  let environment = environments.find(x => x.EnvironmentId === id)
+  if(environment) await redis.set(key, JSON.stringify(environment), ttl || 90);
+  return environment
 }
 
 exports.getResources = function (name, region, accessKeyId, secretAccessKey, sessionToken) {
