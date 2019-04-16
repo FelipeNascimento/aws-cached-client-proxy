@@ -9,10 +9,11 @@ function getClient(region, accessKeyId, secretAccessKey, sessionToken) {
   if (sessionToken) options.sessionToken = sessionToken
   return new AWS.ELB(options);
 }
-function _describeInstanceHealth(region, accessKeyId, secretAccessKey, sessionToken) {
+function _describeInstanceHealth(name, region, accessKeyId, secretAccessKey, sessionToken) {
   return new Promise((fulfill, reject) => {
     const client = getClient(region, accessKeyId, secretAccessKey, sessionToken)
     var params = {
+      LoadBalancerName: name,
       IncludeDeleted: false
     };
     client.describeInstanceHealth(params, function (err, data) {
@@ -21,11 +22,11 @@ function _describeInstanceHealth(region, accessKeyId, secretAccessKey, sessionTo
     });
   });
 };
-exports.describeInstanceHealth = async (region, accessKeyId, secretAccessKey, sessionToken, ttl) => {
-  let key = String.toMD5(`beanstalk_describe_instance_health_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
+exports.describeInstanceHealth = async (name, region, accessKeyId, secretAccessKey, sessionToken, ttl) => {
+  let key = String.toMD5(`beanstalk_describe_instance_health_${name}_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
   let cached = await redis.get(key);
   if (cached) return JSON.parse(cached)
-  let states = await _describeInstanceHealth(region, accessKeyId, secretAccessKey, sessionToken)
+  let states = await _describeInstanceHealth(name, region, accessKeyId, secretAccessKey, sessionToken)
   await redis.set(key, JSON.stringify(states), ttl || 90);
   return states
 }
