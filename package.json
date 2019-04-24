@@ -24,6 +24,6 @@
   "dependencies": {
     "aws-sdk": "^2.426.0",
     "ioredis": "^4.6.2",
-    "type-extensions": "0.0.9"
+    "type-extensions": "^0.0.9"
   }
 }
