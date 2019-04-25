@@ -61,7 +61,7 @@ exports.putObject = function (key, data, bucket, acl, tags = [], region, accessK
     try {
       const params = {
         Bucket: bucket,
-        Key: key,
+        Key: key.toLowerCase(),
         Body: data,
         ACL: acl || 'private',
         Tagging: tags.map(tag => `${tag.key}=${tag.value}`).join('&')
