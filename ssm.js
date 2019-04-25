@@ -1,4 +1,4 @@
-const AWS = require("../node_modules/aws-sdk");
+const AWS = require("aws-sdk");
 function getClient(region, accessKeyId, secretAccessKey, sessionToken) {
   let options = {
     region: region || "us-east-1"
