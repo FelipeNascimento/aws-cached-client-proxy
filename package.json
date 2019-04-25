@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/FelipeNascimento/aws-cached-client-proxy#readme",
   "dependencies": {
-    "aws-sdk": "^2.442.0",
+    "aws-sdk": "^2.443.0",
     "ioredis": "^4.9.0",
     "type-extensions": "^0.0.9"
   }
