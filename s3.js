@@ -78,7 +78,7 @@ exports.putObject = function (key, data, bucket, acl, tags = [], region, accessK
     }
   })
 }
-exports.deleteObject = (key, bucket, region, region, accessKeyId, secretAccessKey, sessionToken) => {
+exports.deleteObject = (key, bucket, region, accessKeyId, secretAccessKey, sessionToken) => {
   return new Promise((fulfill, reject) => {
     try {
       let client = getClient(region, accessKeyId, secretAccessKey, sessionToken);
