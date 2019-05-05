@@ -1,6 +1,6 @@
 {
   "name": "aws-cached-client-proxy",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "AWS cached client for avoid Rate Exceeded from AWS",
   "main": "index.js",
   "scripts": {
