@@ -8,13 +8,13 @@ function getClient(region, accessKeyId, secretAccessKey, sessionToken) {
   if (sessionToken) options.sessionToken = sessionToken
   return new AWS.S3(options);
 }
-exports.getObject = function (key, bucket, region, accessKeyId, secretAccessKey, sessionToken) {
+function _getObject(key, bucket, region, accessKeyId, secretAccessKey, sessionToken) {
   return new Promise((fulfill, reject) => {
     try {
       let client = getClient(region, accessKeyId, secretAccessKey, sessionToken)
       client.getObject({
         Bucket: bucket,
-        Key: key.toLowerCase()
+        Key: key
       },
         (err, data) => {
           if (err) {
@@ -29,6 +29,28 @@ exports.getObject = function (key, bucket, region, accessKeyId, secretAccessKey,
       reject(err);
     }
   });
+}
+function _putObject(key, data, bucket, acl, tags = [], region, accessKeyId, secretAccessKey, sessionToken) {
+  return new Promise((fulfill, reject) => {
+    try {
+      const params = {
+        Bucket: bucket,
+        Key: key,
+        Body: data,
+        ACL: acl || 'private',
+        Tagging: tags.map(tag => `${tag.key}=${tag.value}`).join('&')
+      }
+      let client = getClient(region, accessKeyId, secretAccessKey, sessionToken)
+      client.putObject(params, (err, data) => {
+        if (err) reject(err)
+        else {
+          fulfill(data)
+        }
+      })
+    } catch (err) {
+      reject(err)
+    }
+  })
 }
 exports.listObjects = function (prefix, bucket, region, accessKeyId, secretAccessKey, sessionToken) {
   return new Promise((fulfill, reject) => {
@@ -56,28 +78,6 @@ exports.listObjects = function (prefix, bucket, region, accessKeyId, secretAcces
     }
   });
 }
-exports.putObject = function (key, data, bucket, acl, tags = [], region, accessKeyId, secretAccessKey, sessionToken) {
-  return new Promise((fulfill, reject) => {
-    try {
-      const params = {
-        Bucket: bucket,
-        Key: key.toLowerCase(),
-        Body: data,
-        ACL: acl || 'private',
-        Tagging: tags.map(tag => `${tag.key}=${tag.value}`).join('&')
-      }
-      let client = getClient(region, accessKeyId, secretAccessKey, sessionToken)
-      client.putObject(params, (err, data) => {
-        if (err) reject(err)
-        else {
-          fulfill(data)
-        }
-      })
-    } catch (err) {
-      reject(err)
-    }
-  })
-}
 exports.deleteObject = (key, bucket, region, accessKeyId, secretAccessKey, sessionToken) => {
   return new Promise((fulfill, reject) => {
     try {
@@ -96,4 +96,20 @@ exports.deleteObject = (key, bucket, region, accessKeyId, secretAccessKey, sessi
       reject(err);
     }
   });
+}
+exports.getObject = async (key, bucket, region, accessKeyId, secretAccessKey, sessionToken, ttl) => {
+  key = key.toLowerCase()
+  let cachekey = String.toMD5(`s3_get_object_${key}_${bucket}_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
+  let cached = await redis.get(cachekey);
+  if (cached) return JSON.parse(cached)
+  let content = await _getObject(key, bucket,region, accessKeyId, secretAccessKey, sessionToken)
+  await redis.set(cachekey, content, ttl || 600);
+  return content
+}
+exports.putObject = function (key, data, bucket, acl, tags = [], region, accessKeyId, secretAccessKey, sessionToken, ttl) {
+  key = key.toLowerCase()
+  let cachekey = String.toMD5(`s3_get_object_${key}_${bucket}_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
+  let res = await _putObject(key, data, bucket, acl, tags, region, accessKeyId, secretAccessKey, sessionToken)
+  await redis.set(cachekey, data, ttl || 600);
+  return res
 }
