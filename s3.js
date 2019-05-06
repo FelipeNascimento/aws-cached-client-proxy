@@ -102,11 +102,11 @@ exports.getObject = async (key, bucket, region, accessKeyId, secretAccessKey, se
   let cachekey = String.toMD5(`s3_get_object_${key}_${bucket}_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
   let cached = await redis.get(cachekey);
   if (cached) return cached
-  let content = await _getObject(key, bucket,region, accessKeyId, secretAccessKey, sessionToken)
+  let content = await _getObject(key, bucket, region, accessKeyId, secretAccessKey, sessionToken)
   await redis.set(cachekey, content, ttl || 600);
   return content
 }
-exports.putObject = function (key, data, bucket, acl, tags = [], region, accessKeyId, secretAccessKey, sessionToken, ttl) {
+exports.putObject = async (key, data, bucket, acl, tags = [], region, accessKeyId, secretAccessKey, sessionToken, ttl) => {
   key = key.toLowerCase()
   let cachekey = String.toMD5(`s3_get_object_${key}_${bucket}_${region || 'us-east-1'}_${accessKeyId || ''}_${secretAccessKey || ''}_${sessionToken || ''}`)
   let res = await _putObject(key, data, bucket, acl, tags, region, accessKeyId, secretAccessKey, sessionToken)
