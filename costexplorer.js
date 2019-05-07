@@ -24,7 +24,13 @@ exports.getCostAndUsage = async (params, region, accessKeyId, secretAccessKey, s
   key = String.toMD5(key)
   let cached = await redis.get(key);
   if (cached) return JSON.parse(cached)
-  let results = await _getCostAndUsage(params, region, accessKeyId, secretAccessKey, sessionToken)
-  await redis.set(key, JSON.stringify(results), ttl || 300);
-  return results
+  let response = await _getCostAndUsage(params, region, accessKeyId, secretAccessKey, sessionToken)
+  let items = response.results
+  while(response.next && response.results.length > 0){
+    params.NextPageToken = response.next
+    response = await _getCostAndUsage(params, region, accessKeyId, secretAccessKey, sessionToken)
+    items = items.concat(response.results)
+  }
+  await redis.set(key, JSON.stringify(items), ttl || 300);
+  return items
 }
