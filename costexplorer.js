@@ -14,7 +14,7 @@ function _getCostAndUsage(params, region, accessKeyId, secretAccessKey, sessionT
     const client = getClient(region, accessKeyId, secretAccessKey, sessionToken)
     client.getCostAndUsage(params, function (err, data) {
       if (err) reject(err, err.stack);
-      else fulfill(data.ResultsByTime);
+      else fulfill({ next: data.NextPageToken, results: data.ResultsByTime});
     });
   });
 };
