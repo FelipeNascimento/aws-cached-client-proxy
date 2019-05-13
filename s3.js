@@ -1,4 +1,5 @@
 const AWS = require("aws-sdk");
+const redis = require('./clients/redis')
 function getClient(region, accessKeyId, secretAccessKey, sessionToken) {
   let options = {
     region: region || "us-east-1"
