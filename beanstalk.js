@@ -73,7 +73,7 @@ exports.getEnvironmentsFromApplication = function (application, region, accessKe
     };
     client.describeEnvironments(params, function (err, data) {
       if (err) reject(err, err.stack);
-      else fulfill(data);
+      else fulfill(data.Environments);
     });
   });
 };
