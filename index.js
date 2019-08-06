@@ -34,7 +34,6 @@ AWS.events.on('retry', function (resp) {
 });
 class AWSCachedProxy {
   constructor(AWSClient, region = "us-east-1", credentials = {}) {
-    this.AWS = AWS
     this.options = {
       region: region
     };
@@ -78,5 +77,6 @@ class AWSCachedProxy {
     }
   }
 }
+AWSCachedProxy.AWS = AWS
 module.exports = AWSCachedProxy
 
