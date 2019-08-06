@@ -7,14 +7,14 @@ AWS.events.on('retry', function(resp) {
   }
 });
 class AWSCachedProxy {
-  constructor(AWSClient, region = "us-east-1", accessKeyId, secretAccessKey, sessionToken) {
+  constructor(AWSClient, region = "us-east-1", credentials = {}) {
     this.AWS = AWS
     this.options = {
       region: region
     };
-    if (accessKeyId) this.options.accessKeyId = accessKeyId
-    if (secretAccessKey) this.options.secretAccessKey = secretAccessKey
-    if (sessionToken) this.options.sessionToken = sessionToken
+    if (credentials.accessKeyId) this.options.accessKeyId = credentials.accessKeyId
+    if (credentials.secretAccessKey) this.options.secretAccessKey = credentials.secretAccessKey
+    if (credentials.sessionToken) this.options.sessionToken = credentials.sessionToken
     this.client = new AWSClient(this.options)
     for (let prop in this.client) {
       if (typeof this.client[prop] === 'function') {
