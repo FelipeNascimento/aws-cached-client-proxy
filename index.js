@@ -1,3 +1,4 @@
+require('type-extensions/string')
 const AWS = require("aws-sdk");
 const redis = require('./redis')
 AWS.events.on('retry', function(resp) {
