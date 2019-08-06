@@ -1,10 +1,9 @@
-require('type-extensions/string')
 const IoRedis = require('ioredis')
 class Redis {
   constructor(host, port) {
     this.host = host
     this.port = port
-    this.formatKey = key => String.toMD5(key.toLowerCase())
+    this.formatKey = key => key.toLowerCase()
   }
   get(key, formatKey) {
     return new Promise((fulfill, reject) => {
