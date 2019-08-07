@@ -47,17 +47,28 @@ class AWSCachedProxy {
           return new Promise((fulfill, reject) => {
             this.client[prop](params, (err, data) => {
               if (err) {
-                if (err.code === 'Throttling') {
-                  //TODO: LOG KPI for throttling
-                  if (retry < 4)
-                    retry += 1
-                  setTimeout(() => {
-                    this[prop](params, retry)
-                      .then(fulfill)
-                      .catch(reject)
-                  }, 500 * retry)
+                switch (err.code) {
+                  case 'Throttling':
+                    if (retry < 4) {
+                      retry += 1
+                      setTimeout(() => {
+                        this[prop](params, retry)
+                          .then(fulfill)
+                          .catch(reject)
+                      }, 500 * retry)
+                    }
+                    else reject(err)
+                    break
+                  case 'NoSuchKey':
+                    if (this.client.serviceIdentifier === 's3' && prop === 'getObject') {
+                      fulfill(null)
+                    }
+                    else reject(err)
+                    break
+                  default:
+                    reject(err)
+                    break
                 }
-                else reject(err)
               }
               else fulfill(data)
             })
