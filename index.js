@@ -76,7 +76,7 @@ class AWSCachedProxy {
         }
         if (prop.startsWith('get') || prop.startsWith('describe') || prop.startsWith('read')) {
           this[`${prop}Cached`] = async function (params, ttl) {
-            let key = `${prop}:${String.toMD5({ token: this.options.sessionToken, params: params })}`
+            let key = `${this.options.region}:${prop}:${String.toMD5({ token: this.options.sessionToken, params: params })}`
             let cached = await getCache(key);
             if (cached) return JSON.parse(cached)
             let response = await this[prop](params)
